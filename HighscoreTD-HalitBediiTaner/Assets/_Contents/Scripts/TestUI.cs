@@ -1,87 +1,64 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TestUI : MonoBehaviour
+namespace _Contents.Scripts
 {
-    [SerializeField] private Button _saveButton;
-    [SerializeField] private Button _loadButton;
-    [SerializeField] private TMP_InputField _scoreInput;
-    [SerializeField] private TMP_InputField _goldInput;
-    [SerializeField] private TMP_InputField _enemyDifficultyInput;
-    [SerializeField] private TMP_InputField _spawnIntervalInput;
-
-
-    void Start()
+    public class TestUI : MonoBehaviour
     {
-        AddEvents();
-    }
+        [SerializeField] private Button _saveButton;
+        [SerializeField] private Button _loadButton;
+        [SerializeField] private TMP_InputField _scoreInput;
+        [SerializeField] private TMP_InputField _goldInput;
+        [SerializeField] private TMP_InputField _enemyDifficultyInput;
+        [SerializeField] private TMP_InputField _spawnIntervalInput;
 
-    private void OnDestroy()
-    {
-        RemoveEvents();
-    }
 
-
-    #region Event: Save
-
-    private void SaveGameData()
-    {
-        Debug.Log("SaveGameData");
-        DatabaseManager.Instance.CreateGameData(_scoreInput, _goldInput, _enemyDifficultyInput, _spawnIntervalInput);
-    }
-
-    #endregion
-
-    #region Event: Load
-
-    private void LoadGameData()
-    {
-        Debug.Log("LoadGameData");
-        StartCoroutine(LoadGameDataCoroutine());
-    }
-
-    private IEnumerator LoadGameDataCoroutine()
-    {
-        yield return DatabaseManager.Instance.GetScore(score =>
+        void Start()
         {
-            _scoreInput.text = score.ToString();
-        });
+            AddEvents();
+        }
 
-        yield return DatabaseManager.Instance.GetGold(gold =>
+        private void OnDestroy()
         {
-            _goldInput.text = gold.ToString();
-        });
+            RemoveEvents();
+        }
 
-        yield return DatabaseManager.Instance.GetEnemyDifficulty(enemyDifficulty =>
+
+        #region Event: Save
+
+        private void SaveGameData()
         {
-            _enemyDifficultyInput.text = enemyDifficulty.ToString();
-        });
+            Debug.Log("SaveGameData");
+            // DatabaseManager.Instance.SaveGameData(_scoreInput, _goldInput, _enemyDifficultyInput, _spawnIntervalInput);
+        }
 
-        yield return DatabaseManager.Instance.GetSpawnInterval(spawnInterval =>
+        #endregion
+
+        #region Event: Load
+
+        private void LoadGameData()
         {
-            _spawnIntervalInput.text = spawnInterval.ToString();
-        });
+            Debug.Log("LoadGameData");
+            // StartCoroutine(DatabaseManager.Instance.LoadGameDataCoroutine(_scoreInput, _goldInput, _enemyDifficultyInput, _spawnIntervalInput));
+        }
+
+        #endregion
+
+        #region Events: Add | Remove
+
+        private void AddEvents()
+        {
+            _saveButton.onClick.AddListener(SaveGameData);
+            _loadButton.onClick.AddListener(LoadGameData);
+        }
+
+        private void RemoveEvents()
+        {
+            _saveButton.onClick.RemoveListener(SaveGameData);
+            _loadButton.onClick.RemoveListener(LoadGameData);
+        }
+
+        #endregion
     }
-
-    #endregion
-
-    #region Events: Add | Remove
-
-    private void AddEvents()
-    {
-        _saveButton.onClick.AddListener(SaveGameData);
-        _loadButton.onClick.AddListener(LoadGameData);
-    }
-
-    private void RemoveEvents()
-    {
-        _saveButton.onClick.RemoveListener(SaveGameData);
-        _loadButton.onClick.RemoveListener(LoadGameData);
-    }
-
-    #endregion
 }
