@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     private List<Tower> towers;
     public List<Tower> Towers => towers;
     private List<Enemy> enemies;
-    public float gold;
+    public int gold;
     public int score;
     public float enemySpawnInterval;
     public int currentEnemyDifficulty;
@@ -24,6 +24,10 @@ public class GameManager : MonoBehaviour
     public GameObject[] enemyPrefabs;
     public Booster booster; // Booster objesi
 
+    //Views
+    [SerializeField]
+    private TopBarHUD _topBarHUD;
+    
     // Scriptable Object configurations
     private TowerConfig[] towerConfigs;
 
@@ -100,7 +104,7 @@ public class GameManager : MonoBehaviour
         SessionData data = new SessionData
         {
             towers = new List<TowerData>(),
-            currentGoldAmount = (int)gold,
+            currentGoldAmount = gold,
             currentEnemyDifficulty = currentEnemyDifficulty,
             currentScoreAmount = score,
             currentSpawnInterval = enemySpawnInterval
@@ -213,7 +217,15 @@ public class GameManager : MonoBehaviour
         score += 10; // Example score increment
         gold += 5; // Example gold increment
 
+        // Update the TopBarHUD with the new values
+        UpdateTopBarHUD();
+
         // Booster barını doldur
         booster.AddBoosterAmount(10); // Örneğin, her öldürmede 10 birim ekle
+    }
+    private void UpdateTopBarHUD()
+    {
+        _topBarHUD.SetGold(gold);
+        _topBarHUD.SetScore(score);
     }
 }

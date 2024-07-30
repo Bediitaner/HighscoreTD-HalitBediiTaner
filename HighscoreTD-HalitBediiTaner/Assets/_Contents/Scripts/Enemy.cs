@@ -5,7 +5,6 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     public EnemyConfig config;
-    private float health;
     private NavMeshAgent agent;
 
     public Vector3 Position { get { return transform.position; } }
@@ -18,7 +17,7 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         agent.speed = config.speed;
-        health = config.health;
+        config.currentHealth = config.maxHealth;
 
         agent.SetDestination(GameManager.Instance.MainTower.position);
     }
@@ -29,8 +28,8 @@ public class Enemy : MonoBehaviour
 
     public void TakeDamage(float damageAmount)
     {
-        health -= damageAmount;
-        if (health <= 0)
+        config.currentHealth -= damageAmount;
+        if (config.currentHealth <= 0)
         {
             Die();
         }
