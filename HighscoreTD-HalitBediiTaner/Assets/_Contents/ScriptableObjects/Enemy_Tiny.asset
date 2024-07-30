@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 009594e79c2f43a7ad0d433e7b54944f, type: 3}
-  m_Name: Default_Enemy
+  m_Name: Enemy_Tiny
   m_EditorClassIdentifier: 
-  currentHealth: 20
-  maxHealth: 20
-  speed: 4
-  damage: 10
+  currentHealth: 10
+  maxHealth: 10
+  speed: 3
+  damage: 20

@@ -29,7 +29,7 @@ public class FirebaseManager : MonoBehaviour
         _userId = SystemInfo.deviceUniqueIdentifier;
         _reference = FirebaseDatabase.DefaultInstance.RootReference;
 
-        LoadData().ContinueWith(task =>
+        DataManager.Instance.LoadData().ContinueWith(task =>
         {
             if (task.Result == null)
             {
@@ -41,42 +41,7 @@ public class FirebaseManager : MonoBehaviour
                     currentScoreAmount = 0,
                     currentSpawnInterval = 5.0f
                 };
-                SaveData(defaultData);
-            }
-        });
-    }
-
-    public void SaveData(SessionData data)
-    {
-        string json = JsonUtility.ToJson(data);
-        _reference.Child("users").Child(_userId).SetRawJsonValueAsync(json).ContinueWith(task =>
-        {
-            if (task.IsCompleted)
-            {
-                Debug.Log("Data saved successfully.");
-            }
-            else
-            {
-                Debug.LogError("Failed to save data: " + task.Exception);
-            }
-        });
-    }
-
-    public Task<SessionData> LoadData()
-    {
-        var task = _reference.Child("users").Child(_userId).GetValueAsync();
-        return task.ContinueWith(t =>
-        {
-            if (t.IsCompleted && t.Result.Exists)
-            {
-                string json = t.Result.GetRawJsonValue();
-                SessionData data = JsonUtility.FromJson<SessionData>(json);
-                return data;
-            }
-            else
-            {
-                Debug.LogWarning("No data found for user: " + _userId);
-                return null;
+                DataManager.Instance.SaveData(defaultData);
             }
         });
     }

@@ -1,10 +1,11 @@
 using System;
+using _Contents.Scripts.Managers;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
-    public EnemyConfig config;
+    public EnemyConfigSO config;
     private NavMeshAgent agent;
 
     public Vector3 Position { get { return transform.position; } }
@@ -19,7 +20,7 @@ public class Enemy : MonoBehaviour
         agent.speed = config.speed;
         config.currentHealth = config.maxHealth;
 
-        agent.SetDestination(GameManager.Instance.MainTower.position);
+        agent.SetDestination(GameManager.Instance.CastleTransform.position);
     }
 
     void Update()

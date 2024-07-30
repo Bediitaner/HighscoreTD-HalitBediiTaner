@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &899300598270146696
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -5.9791384
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -4819697860069210260, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: c38fff6fe04856e46b2565d9009e04fe, type: 2}
+    - target: {fileID: -359818502116782761, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: b9374e0a24e1fff4c9ccf9f209211a75, type: 2}
+    - target: {fileID: 919132149155446097, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_Name
+      value: Tower_Mortar
+      objectReference: {fileID: 0}
+    - target: {fileID: 2292310511048172744, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: bb58e791dbcaa2f4ba3deb213dfa5852, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1f9d79ac4fd646e4189796717a888478,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8641896090917985550}
+  m_SourcePrefab: {fileID: 100100000, guid: 1f9d79ac4fd646e4189796717a888478, type: 3}
+--- !u!1 &52808378576864729 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1f9d79ac4fd646e4189796717a888478,
+    type: 3}
+  m_PrefabInstance: {fileID: 899300598270146696}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8641896090917985550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52808378576864729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77d91f33cd4c41a0a5c5335774dcc888, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  config: {fileID: 11400000, guid: d374fc4cc0ba01f41a89a0dd86c87df9, type: 2}
+  level: 0

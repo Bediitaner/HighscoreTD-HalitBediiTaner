@@ -2,15 +2,15 @@ using UnityEngine;
 
 public abstract class Tower : MonoBehaviour
 {
-    public TowerConfig config;
+    public TowerConfigSO config;
     public int level;
     protected float currentCooldown;
 
     public Vector3 Position { get; private set; }
 
-    public void Initialize(TowerConfig towerConfig)
+    public void Initialize(TowerConfigSO towerConfigSO)
     {
-        config = towerConfig;
+        config = towerConfigSO;
         transform.name = config.towerType.ToString();
         ResetCooldown();
     }

@@ -1,136 +1,257 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-public class GameManager : MonoBehaviour
+namespace _Contents.Scripts.Managers
 {
-    public static GameManager Instance { get; private set; }
-
-    [SerializeField]
-    private Transform _mainTower;
-    public Transform MainTower => _mainTower;
-
-    private List<Tower> towers;
-    public List<Tower> Towers => towers;
-    private List<Enemy> enemies;
-    public int gold;
-    public int score;
-    public float enemySpawnInterval;
-    public int currentEnemyDifficulty;
-    public Transform enemySpawnPoint;
-    public Transform[] waypoints; // Waypoints for enemies to follow
-    public GameObject[] enemyPrefabs;
-    public Booster booster; // Booster objesi
-
-    //Views
-    [SerializeField]
-    private TopBarHUD _topBarHUD;
-    
-    // Scriptable Object configurations
-    private TowerConfig[] towerConfigs;
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        if (Instance != null && Instance != this)
+        public static GameManager Instance { get; private set; }
+        public StateMachine StateMachine { get; private set; }
+
+        private Dictionary<TowerType, int> towerPrices;
+        private Dictionary<TowerType, TowerConfigSO> towerConfigs;
+        private Dictionary<TowerType, GameObject> towerPrefabs;
+        private bool hasPlacedTower;
+        private bool isDataLoaded;
+        private bool isBuyingTower;
+        private List<Tower> towers = new List<Tower>();
+        private List<Enemy> enemies = new List<Enemy>();
+        public int gold;
+        public int score;
+        public float enemySpawnInterval;
+        public int currentEnemyDifficulty;
+        public Transform enemySpawnPoint;
+        public Transform[] waypoints;
+        public GameObject[] enemyPrefabs;
+        public Booster booster;
+
+        [SerializeField]
+        private Transform castleTransform;
+        public Transform CastleTransform => castleTransform;
+
+        [SerializeField]
+        public TowerPurchaseHUD towerPurchaseHUD;
+
+        [SerializeField]
+        private TopBarHUD _topBarHUD;
+
+        [SerializeField]
+        private TowerConfigSO[] towerConfigArray;
+
+        private void Awake()
         {
-            Destroy(gameObject);
-            return;
+            InitializeSingleton();
+            InitializeStateMachine();
+            InitializeGameSettings();
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    private void Start()
-    {
-        InitializeGame();
-    }
-
-    private async void InitializeGame()
-    {
-        towers = new List<Tower>();
-        enemies = new List<Enemy>();
-
-        SessionData data = await FirebaseManager.Instance.LoadData();
-
-        if (data != null)
+        private void Start()
         {
-            gold = data.currentGoldAmount;
-            score = data.currentScoreAmount;
-            enemySpawnInterval = data.currentSpawnInterval;
-            currentEnemyDifficulty = data.currentEnemyDifficulty;
+            StateMachine.ChangeState(new StartingState(this));
+        }
 
-            foreach (var towerData in data.towers)
+        private void Update()
+        {
+            StateMachine.Update();
+        }
+
+        #region Initialization
+
+        private void InitializeSingleton()
+        {
+            if (Instance != null && Instance != this)
             {
-                Tower tower = InstantiateTower(towerData.towerType);
-                tower.Place(towerData.position);
-                tower.level = towerData.level;
-                towers.Add(tower);
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        private void InitializeStateMachine()
+        {
+            StateMachine = new StateMachine();
+        }
+
+        private void InitializeGameSettings()
+        {
+            InitializeTowerPrices();
+            InitializeTowerConfigs();
+            InitializeTowerPrefabs();
+        }
+
+        private void InitializeTowerPrices()
+        {
+            towerPrices = new Dictionary<TowerType, int>
+            {
+                { TowerType.Turret, 100 },
+                { TowerType.Mine, 50 },
+                { TowerType.Mortar, 150 }
+            };
+        }
+
+        private void InitializeTowerConfigs()
+        {
+            towerConfigs = new Dictionary<TowerType, TowerConfigSO>();
+            foreach (var config in towerConfigArray)
+            {
+                towerConfigs[config.towerType] = config;
             }
         }
-        else
+
+        private void InitializeTowerPrefabs()
         {
-            Debug.Log("No saved data found. Starting a new game.");
-        }
-
-        StartCoroutine(SpawnEnemies());
-    }
-
-    public void StartGame()
-    {
-        // Logic to start the game
-    }
-
-    public void EndGame()
-    {
-        // Logic to end the game
-        StopAllCoroutines();
-    }
-
-    public void UpdateGame()
-    {
-        // Logic to update the game state
-    }
-
-    private void OnApplicationQuit()
-    {
-        SaveSession();
-    }
-
-    public void SaveSession()
-    {
-        SessionData data = new SessionData
-        {
-            towers = new List<TowerData>(),
-            currentGoldAmount = gold,
-            currentEnemyDifficulty = currentEnemyDifficulty,
-            currentScoreAmount = score,
-            currentSpawnInterval = enemySpawnInterval
-        };
-
-        foreach (var tower in towers)
-        {
-            TowerData towerData = new TowerData
+            towerPrefabs = new Dictionary<TowerType, GameObject>
             {
-                towerType = tower.config.towerType,
-                position = tower.Position,
-                level = tower.level
+                { TowerType.Turret, Resources.Load<GameObject>("Prefabs/Tower_Turret") },
+                { TowerType.Mine, Resources.Load<GameObject>("Prefabs/Tower_Mine") },
+                { TowerType.Mortar, Resources.Load<GameObject>("Prefabs/Tower_Mortar") }
             };
-            data.towers.Add(towerData);
+
+            // Check if any prefab failed to load
+            foreach (var prefab in towerPrefabs)
+            {
+                if (prefab.Value == null)
+                {
+                    Debug.LogError($"Failed to load prefab for {prefab.Key}");
+                }
+            }
         }
 
-        FirebaseManager.Instance.SaveData(data);
-    }
+        #endregion
 
-    public async void LoadSession()
-    {
-        SessionData data = await FirebaseManager.Instance.LoadData();
+        #region Tower Management
 
-        if (data != null)
+        public int GetTowerPrice(TowerType towerType)
         {
-            // Clear current game state
+            return towerPrices[towerType];
+        }
+
+        public void PlaceTower(TowerType towerType, Vector3 position)
+        {
+            if (gold >= towerPrices[towerType])
+            {
+                gold -= towerPrices[towerType];
+                Tower tower = InstantiateTower(towerType);
+                tower.Place(position);
+                towers.Add(tower);
+
+                towerPrices[towerType] += 10;
+                hasPlacedTower = true;
+                UpdateGoldText();
+            }
+            else
+            {
+                Debug.Log("Not enough gold to place this tower.");
+            }
+        }
+
+        private Tower InstantiateTower(TowerType towerType)
+        {
+            if (!towerPrefabs.ContainsKey(towerType))
+            {
+                Debug.LogError($"Tower type {towerType} not found in prefabs dictionary");
+                return null;
+            }
+
+            GameObject towerObject = towerPrefabs[towerType];
+            if (towerObject == null)
+            {
+                Debug.LogError($"Prefab for tower type {towerType} is null");
+                return null;
+            }
+
+            GameObject instantiatedTowerObject = Instantiate(towerObject);
+            if (instantiatedTowerObject == null)
+            {
+                Debug.LogError($"Failed to instantiate tower of type {towerType}");
+                return null;
+            }
+
+            Tower tower = instantiatedTowerObject.GetComponent<Tower>();
+            if (tower == null)
+            {
+                Debug.LogError($"Tower component not found on instantiated object of type {towerType}");
+                return null;
+            }
+
+            TowerConfigSO config = GetTowerConfig(towerType);
+            tower.Initialize(config);
+            return tower;
+        }
+
+        private TowerConfigSO GetTowerConfig(TowerType towerType)
+        {
+            return towerConfigs[towerType];
+        }
+
+        public bool HasPlacedTower => hasPlacedTower;
+        public bool IsDataLoaded => isDataLoaded;
+        public bool IsBuyingTower
+        {
+            get => isBuyingTower;
+            set => isBuyingTower = value;
+        }
+
+        #endregion
+
+        #region Enemy Management
+
+        public void OnEnemyKilled(Enemy enemy)
+        {
+            enemies.Remove(enemy);
+            score += 10;
+            gold += 5;
+            UpdateTopBarHUD();
+            booster.AddBoosterAmount(10);
+            UpdateGoldText();
+        }
+
+        private void UpdateTopBarHUD()
+        {
+            _topBarHUD.SetGold(gold);
+            _topBarHUD.SetScore(score);
+        }
+
+        private IEnumerator SpawnEnemies()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(enemySpawnInterval);
+                Enemy enemy = InstantiateEnemy();
+                enemies.Add(enemy);
+                enemySpawnInterval = Mathf.Max(1.0f, enemySpawnInterval - 0.1f);
+                currentEnemyDifficulty++;
+            }
+        }
+
+        private Enemy InstantiateEnemy()
+        {
+            GameObject enemyObject = Instantiate(enemyPrefabs[Random.Range(0, enemyPrefabs.Length)], enemySpawnPoint.position, Quaternion.identity);
+            Enemy enemy = enemyObject.GetComponent<Enemy>();
+            return enemy;
+        }
+
+        #endregion
+
+        #region Game State Management
+
+        public async void LoadSession()
+        {
+            SessionData data = await DataManager.Instance.LoadData();
+
+            if (data != null)
+            {
+                ClearCurrentGameState();
+                LoadGameData(data);
+                isDataLoaded = true;
+            }
+        }
+
+        private void ClearCurrentGameState()
+        {
             foreach (var tower in towers)
             {
                 Destroy(tower.gameObject);
@@ -144,88 +265,64 @@ public class GameManager : MonoBehaviour
             }
 
             enemies.Clear();
+        }
 
-            // Load saved game state
+        private void LoadGameData(SessionData data)
+        {
+            gold = data.currentGoldAmount;
+            score = data.currentScoreAmount;
+            enemySpawnInterval = data.currentSpawnInterval;
+            currentEnemyDifficulty = data.currentEnemyDifficulty;
+
             foreach (var towerData in data.towers)
             {
-                // Instantiate and place towers based on saved data
                 Tower tower = InstantiateTower(towerData.towerType);
                 tower.Place(towerData.position);
                 tower.level = towerData.level;
                 towers.Add(tower);
             }
-
-            gold = data.currentGoldAmount;
-            currentEnemyDifficulty = data.currentEnemyDifficulty;
-            score = data.currentScoreAmount;
-            enemySpawnInterval = data.currentSpawnInterval;
         }
-    }
 
-    private Tower InstantiateTower(TowerType towerType)
-    {
-        // Logic to instantiate a tower based on its type
-        TowerConfig config = GetTowerConfig(towerType);
-        GameObject towerObject = new GameObject(towerType.ToString());
-        Tower tower = towerObject.AddComponent<Tower>(); // Add the appropriate tower script (Turret, Mine, Mortar) dynamically
-        tower.Initialize(config);
-        return tower;
-    }
-
-    private TowerConfig GetTowerConfig(TowerType towerType)
-    {
-        foreach (var config in towerConfigs)
+        public void SaveSession()
         {
-            if (config.towerType == towerType)
+            SessionData data = new SessionData
             {
-                return config;
+                towers = new List<TowerData>(),
+                currentGoldAmount = gold,
+                currentEnemyDifficulty = currentEnemyDifficulty,
+                currentScoreAmount = score,
+                currentSpawnInterval = enemySpawnInterval
+            };
+
+            foreach (var tower in towers)
+            {
+                TowerData towerData = new TowerData
+                {
+                    towerType = tower.config.towerType,
+                    position = tower.Position,
+                    level = tower.level
+                };
+                data.towers.Add(towerData);
             }
+
+            DataManager.Instance.SaveData(data);
         }
 
-        return null;
-    }
-
-    private IEnumerator SpawnEnemies()
-    {
-        while (true)
+        public void EndGame()
         {
-            yield return new WaitForSeconds(enemySpawnInterval);
-
-            // Logic to spawn an enemy
-            Enemy enemy = InstantiateEnemy();
-            enemies.Add(enemy);
-
-            // Adjust spawn interval and difficulty based on game progression
-            enemySpawnInterval = Mathf.Max(1.0f, enemySpawnInterval - 0.1f);
-            currentEnemyDifficulty++;
+            Debug.Log("Game Over");
+            StateMachine.ChangeState(new GameEndState(this));
         }
-    }
 
-    private Enemy InstantiateEnemy()
-    {
-        // Logic to instantiate an enemy
+        #endregion
 
-        GameObject enemyObject = Instantiate(enemyPrefabs[Random.Range(0, enemyPrefabs.Length)], enemySpawnPoint.position, Quaternion.identity);
+        #region UI Management
 
-        Enemy enemy = enemyObject.GetComponent<Enemy>();
-        return enemy;
-    }
+        public void UpdateGoldText()
+        {
+            towerPurchaseHUD.UpdatePriceTexts();
+        }
 
-    public void OnEnemyKilled(Enemy enemy)
-    {
-        enemies.Remove(enemy);
-        score += 10; // Example score increment
-        gold += 5; // Example gold increment
-
-        // Update the TopBarHUD with the new values
-        UpdateTopBarHUD();
-
-        // Booster barını doldur
-        booster.AddBoosterAmount(10); // Örneğin, her öldürmede 10 birim ekle
-    }
-    private void UpdateTopBarHUD()
-    {
-        _topBarHUD.SetGold(gold);
-        _topBarHUD.SetScore(score);
+        #endregion
     }
 }

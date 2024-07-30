@@ -36,11 +36,11 @@ public class Booster : MonoBehaviour
         isBoosterActive = true;
         currentBoosterAmount = 0;
 
-        // Tüm kulelerin yenilenme süresini geçici olarak azalt
-        foreach (var tower in GameManager.Instance.Towers)
-        {
-            tower.config.cooldown /= 2;
-        }
+        // // Tüm kulelerin yenilenme süresini geçici olarak azalt
+        // // foreach (var tower in GameManager.Instance.Towers)
+        // {
+        //     tower.config.cooldown /= 2;
+        // }
     }
 
     private void DeactivateBooster()
@@ -49,9 +49,9 @@ public class Booster : MonoBehaviour
         boosterDuration = 5f;
 
         // Tüm kulelerin yenilenme süresini eski haline getir
-        foreach (var tower in GameManager.Instance.Towers)
-        {
-            tower.config.cooldown *= 2;
-        }
+        // foreach (var tower in GameManager.Instance.Towers)
+        // {
+        //     tower.config.cooldown *= 2;
+        // }
     }
 }

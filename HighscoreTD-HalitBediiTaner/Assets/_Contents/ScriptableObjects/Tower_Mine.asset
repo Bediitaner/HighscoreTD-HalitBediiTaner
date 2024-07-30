@@ -9,10 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 009594e79c2f43a7ad0d433e7b54944f, type: 3}
-  m_Name: Tiny_Enemy
+  m_Script: {fileID: 11500000, guid: 0d011673594f4fd891e359852e5436cb, type: 3}
+  m_Name: Tower_Mine
   m_EditorClassIdentifier: 
-  currentHealth: 10
-  maxHealth: 10
-  speed: 3
-  damage: 20
+  towerType: 1
+  cost: 10
+  maxRange: 10
+  deadRange: 0
+  damage: 100
+  fireRate: 0
+  cooldown: 0

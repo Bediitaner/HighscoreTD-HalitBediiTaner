@@ -11,12 +11,17 @@ public class Turret : Tower
     {
         if (IsEnemyInRange(enemy))
         {
-            enemy.TakeDamage(config.damage);
+            FireAtEnemy(enemy);
         }
     }
-    
+
     private bool IsEnemyInRange(Enemy enemy)
     {
-        return Vector3.Distance(Position, enemy.Position) <= config.range;
+        return Vector3.Distance(Position, enemy.Position) <= config.maxRange;
+    }
+
+    private void FireAtEnemy(Enemy enemy)
+    {
+        // Logic to fire at the closest enemy
     }
 }
