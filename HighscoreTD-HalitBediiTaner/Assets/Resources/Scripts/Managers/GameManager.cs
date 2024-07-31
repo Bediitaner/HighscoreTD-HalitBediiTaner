@@ -90,6 +90,8 @@ namespace Resources.Scripts.Managers
 
             LoadExistingData();
             StateMachine.ChangeState(new StartingState(this));
+            
+            UpdateTopBarHUDs();
         }
 
         private void Update()
@@ -396,10 +398,10 @@ namespace Resources.Scripts.Managers
             SessionData defaultData = new SessionData()
             {
                 towers = new List<TowerData>(),
-                currentGoldAmount = 250,
+                currentGoldAmount = 4000,
                 currentEnemyDifficulty = 1,
                 currentScoreAmount = 0,
-                currentSpawnInterval = 5.0f,
+                currentSpawnInterval = 4.0f,
                 currentCastleHP = 100
             };
             string json = JsonUtility.ToJson(defaultData);

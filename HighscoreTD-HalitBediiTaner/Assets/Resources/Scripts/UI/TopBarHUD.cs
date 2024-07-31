@@ -1,12 +1,13 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class TopBarHUD : MonoBehaviour
 {
     [SerializeField]
-    private Text goldText;
+    private TextMeshProUGUI goldText;
     [SerializeField]
-    private Text scoreText;
+    private TextMeshProUGUI scoreText;
 
     public void SetGold(int gold)
     {
