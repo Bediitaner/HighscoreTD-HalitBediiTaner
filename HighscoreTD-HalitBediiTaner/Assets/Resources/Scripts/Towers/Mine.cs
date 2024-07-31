@@ -6,7 +6,7 @@ public class Mine : Tower
     protected override void Activate()
     {
         // Mine specific activation logic
-        // This could include setting up visual indicators or enabling collision detection
+        gameObject.transform.position = Position;
         Debug.Log("Mine activated and placed at position: " + Position);
     }
 

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace _Contents.Scripts.Managers
+namespace Resources.Scripts.Managers
 {
     public class GameManager : MonoBehaviour
     {
@@ -105,9 +105,9 @@ namespace _Contents.Scripts.Managers
         {
             towerPrefabs = new Dictionary<TowerType, GameObject>
             {
-                { TowerType.Turret, Resources.Load<GameObject>("Prefabs/Tower_Turret") },
-                { TowerType.Mine, Resources.Load<GameObject>("Prefabs/Tower_Mine") },
-                { TowerType.Mortar, Resources.Load<GameObject>("Prefabs/Tower_Mortar") }
+                { TowerType.Turret, UnityEngine.Resources.Load<GameObject>("Prefabs/Tower_Turret") },
+                { TowerType.Mine, UnityEngine.Resources.Load<GameObject>("Prefabs/Tower_Mine") },
+                { TowerType.Mortar, UnityEngine.Resources.Load<GameObject>("Prefabs/Tower_Mortar") }
             };
 
             // Check if any prefab failed to load
@@ -131,21 +131,18 @@ namespace _Contents.Scripts.Managers
 
         public void PlaceTower(TowerType towerType, Vector3 position)
         {
-            if (gold >= towerPrices[towerType])
-            {
-                gold -= towerPrices[towerType];
-                Tower tower = InstantiateTower(towerType);
-                tower.Place(position);
-                towers.Add(tower);
+            Tower tower = InstantiateTower(towerType);
+            tower.Place(position);
+            towers.Add(tower);
 
-                towerPrices[towerType] += 10;
-                hasPlacedTower = true;
-                UpdateGoldText();
-            }
-            else
-            {
-                Debug.Log("Not enough gold to place this tower.");
-            }
+            // Increase the price for the next tower of the same type
+            towerPrices[towerType] += 10;
+
+            // Set hasPlacedTower to true
+            hasPlacedTower = true;
+
+            // Update the gold text in the UI
+            UpdateGoldText();
         }
 
         private Tower InstantiateTower(TowerType towerType)

@@ -4,7 +4,8 @@ public class Turret : Tower
 {
     protected override void Activate()
     {
-        // Turret specific activation logic
+        gameObject.transform.position = Position;
+        Debug.Log("Turret activated and placed at position: " + Position);
     }
 
     public override void Attack(Enemy enemy)

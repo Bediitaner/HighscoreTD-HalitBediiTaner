@@ -1,5 +1,5 @@
 using System.Collections;
-using _Contents.Scripts.Managers;
+using Resources.Scripts.Managers;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -26,27 +26,13 @@ public class TowerPurchaseHUD : MonoBehaviour
     {
         if (GameManager.Instance.gold >= GameManager.Instance.GetTowerPrice(towerType))
         {
-            GameManager.Instance.IsBuyingTower = true;
-            StartCoroutine(HandleTowerPlacement(towerType));
+            GameManager.Instance.gold -= GameManager.Instance.GetTowerPrice(towerType);
+            TowerPlacementManager.Instance.StartPlacingTower(towerType);
+            UpdatePriceTexts();
         }
         else
         {
             Debug.Log("Not enough gold to buy this tower.");
-        }
-    }
-
-    private IEnumerator HandleTowerPlacement(TowerType towerType)
-    {
-        while (GameManager.Instance.IsBuyingTower)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Vector3 position = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                position.z = 0; // Ensure the position is on the same plane as the game objects
-                GameManager.Instance.PlaceTower(towerType, position);
-                GameManager.Instance.IsBuyingTower = false;
-            }
-            yield return null;
         }
     }
 

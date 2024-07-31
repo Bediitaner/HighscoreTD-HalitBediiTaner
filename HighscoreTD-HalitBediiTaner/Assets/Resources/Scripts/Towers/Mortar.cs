@@ -6,6 +6,8 @@ public class Mortar : Tower
     protected override void Activate()
     {
         // Mortar-specific activation logic
+        gameObject.transform.position = Position;
+        Debug.Log("Mortar activated and placed at position: " + Position);
     }
 
     public override void Attack(Enemy enemy)

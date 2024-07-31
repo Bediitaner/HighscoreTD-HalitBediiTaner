@@ -108,7 +108,15 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e086c317f91138146b99acaff049d6c8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4647615234896481603}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e086c317f91138146b99acaff049d6c8,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6569936644469934805}
   m_SourcePrefab: {fileID: 100100000, guid: e086c317f91138146b99acaff049d6c8, type: 3}
 --- !u!4 &5794930362505024591 stripped
 Transform:
@@ -116,3 +124,44 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 6332345898005279652}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6566365743951941365 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e086c317f91138146b99acaff049d6c8,
+    type: 3}
+  m_PrefabInstance: {fileID: 6332345898005279652}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4647615234896481603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6566365743951941365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07f398cbbe5847019452c32e10a4f8e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultMaterial: {fileID: 2100000, guid: 1b465c9c75106cc4dadf97673de5181c, type: 2}
+  highlightMaterial: {fileID: 2100000, guid: 5fa61c706ef41c244965cc00ed1bfa96, type: 2}
+--- !u!65 &6569936644469934805
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6566365743951941365}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.021500003, y: 0.021500006, z: 0.0010482802}
+  m_Center: {x: 0.00002595067, y: 0.0000000011920929, z: -0.00052405003}

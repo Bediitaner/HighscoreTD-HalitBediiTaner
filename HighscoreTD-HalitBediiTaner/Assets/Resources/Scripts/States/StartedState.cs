@@ -1,4 +1,4 @@
-using _Contents.Scripts.Managers;
+using Resources.Scripts.Managers;
 using UnityEngine;
 
 public class StartedState : State
