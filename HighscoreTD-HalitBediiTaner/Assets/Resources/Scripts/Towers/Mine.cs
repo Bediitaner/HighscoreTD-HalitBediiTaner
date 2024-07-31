@@ -1,11 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Resources.Scripts.Enemy;
 
 public class Mine : Tower
 {
     protected override void Activate()
     {
-        // Mine specific activation logic
         gameObject.transform.position = Position;
         Debug.Log("Mine activated and placed at position: " + Position);
     }
@@ -20,7 +20,7 @@ public class Mine : Tower
 
     private bool IsEnemyOnMine(Enemy enemy)
     {
-        return Vector3.Distance(Position, enemy.Position) <= 0.5f; // Example range for mine activation
+        return Vector3.Distance(Position, enemy.Position) <= 0.5f;
     }
 
     private void Explode()
@@ -28,29 +28,26 @@ public class Mine : Tower
         List<Enemy> enemiesInRange = GetEnemiesInRange();
         foreach (Enemy enemy in enemiesInRange)
         {
-            float distance = Vector3.Distance(Position, enemy.Position);
-            float damage = CalculateDamage(distance);
+            var distance = Vector3.Distance(Position, enemy.Position);
+            var damage = CalculateDamage(distance);
             enemy.TakeDamage(damage);
         }
-        // Logic for explosion effects
         Debug.Log("Mine exploded and will be destroyed.");
         Destroy(gameObject);
     }
 
     private List<Enemy> GetEnemiesInRange()
     {
-        // Implement logic to get all enemies within maxRange
-        // This is a placeholder and should be replaced with actual game logic
+        //TODO: @Halit
         return new List<Enemy>();
     }
 
     private float CalculateDamage(float distance)
     {
-        // Example damage calculation based on distance
-        float maxDamage = config.damage;
-        float minDamage = config.damage * 0.5f; // Minimum damage is 50% of max damage
-        float damageRange = maxDamage - minDamage;
-        float damage = maxDamage - (distance / config.maxRange) * damageRange;
+        var maxDamage = config.damage;
+        var minDamage = config.damage * 0.5f;
+        var damageRange = maxDamage - minDamage;
+        var damage = maxDamage - (distance / config.maxRange) * damageRange;
         return Mathf.Max(damage, minDamage);
     }
 }

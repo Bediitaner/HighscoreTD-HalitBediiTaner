@@ -9030,12 +9030,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65ad5afbfcbb4981955969febf073a4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gold: 0
-  score: 0
-  enemySpawnInterval: 0
-  currentEnemyDifficulty: 0
-  enemySpawnPoint: {fileID: 391171167}
-  waypoints:
+  _waypoints:
   - {fileID: 674929212}
   - {fileID: 351769887}
   - {fileID: 945765216}
@@ -9053,18 +9048,23 @@ MonoBehaviour:
   - {fileID: 292771434}
   - {fileID: 1521473649}
   - {fileID: 310377440}
-  enemyPrefabs:
+  _enemyPrefabs:
   - {fileID: 4329061708596712740, guid: 87203a326d48b944a9e76667d49921d3, type: 3}
   - {fileID: 7870073047299238110, guid: 3bf3e0861a0a1924182483d6b9209389, type: 3}
   - {fileID: 9107790719454678343, guid: 35cb85ff1e7228447a3514d8e83a8ac9, type: 3}
-  booster: {fileID: 0}
-  castleTransform: {fileID: 6107226253758036037}
-  towerPurchaseHUD: {fileID: 2141868986}
-  _topBarHUD: {fileID: 2005913106}
-  towerConfigArray:
+  _towerConfigArray:
   - {fileID: 11400000, guid: 00202e563bd19a04187a8e6e8bde883e, type: 2}
   - {fileID: 11400000, guid: d374fc4cc0ba01f41a89a0dd86c87df9, type: 2}
   - {fileID: 11400000, guid: a0212c49dfea2ca48ba9ec9e5941f65f, type: 2}
+  _enemySpawnPoint: {fileID: 391171167}
+  _castleTransform: {fileID: 6107226253758036037}
+  _towerPurchaseHUD: {fileID: 2141868986}
+  _topBarHUD: {fileID: 2005913106}
+  Gold: 0
+  Score: 0
+  EnemySpawnInterval: 0
+  CurrentEnemyDifficulty: 0
+  CastleHp: 100
 --- !u!4 &698507144
 Transform:
   m_ObjectHideFlags: 0

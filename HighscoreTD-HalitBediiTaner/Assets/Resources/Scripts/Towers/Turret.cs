@@ -1,3 +1,4 @@
+using Resources.Scripts.Enemy;
 using UnityEngine;
 
 public class Turret : Tower
@@ -23,6 +24,6 @@ public class Turret : Tower
 
     private void FireAtEnemy(Enemy enemy)
     {
-        // Logic to fire at the closest enemy
+        //TODO: @Halit - Logic - Fire to closest enemy
     }
 }

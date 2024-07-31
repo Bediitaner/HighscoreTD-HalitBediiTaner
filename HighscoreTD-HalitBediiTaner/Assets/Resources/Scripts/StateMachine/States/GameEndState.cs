@@ -8,7 +8,6 @@ public class GameEndState : State
     public override void Enter()
     {
         base.Enter();
-        // Logic for game end
         gameManager.EndGame();
     }
 }

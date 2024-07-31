@@ -1,3 +1,4 @@
+using Resources.Scripts.Enemy;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +19,7 @@ public class EnemyHealthBarUI : MonoBehaviour
         if (enemy != null)
         {
             // Can barını düşmanın mevcut canına göre güncelle.
-            foregroundImage.fillAmount = enemy.config.currentHealth / enemy.config.maxHealth;
+            foregroundImage.fillAmount = enemy.Config.currentHealth / enemy.Config.maxHealth;
         }
         
         if (mainCamera != null)

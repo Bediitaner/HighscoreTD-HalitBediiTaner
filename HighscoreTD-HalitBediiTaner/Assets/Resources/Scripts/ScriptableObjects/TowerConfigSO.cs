@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "TowerConfig", menuName = "ScriptableObjects/New Tower", order = 1)]
+[CreateAssetMenu(fileName = "Tower Config", menuName = "ScriptableObjects/New Tower", order = 1)]
 public class TowerConfigSO : ScriptableObject
 {
     public TowerType towerType;

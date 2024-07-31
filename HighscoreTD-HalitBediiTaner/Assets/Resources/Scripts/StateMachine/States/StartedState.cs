@@ -21,7 +21,6 @@ public class StartedState : State
         base.Update();
         currentState.Update();
 
-        // Transition to TowerPlacement if user buys a tower
         if (gameManager.IsBuyingTower)
         {
             currentState.Exit();

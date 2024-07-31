@@ -2,97 +2,136 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PopupManager : MonoBehaviour
+namespace Resources.Scripts.Managers
 {
-    // Singleton instance
-    public static PopupManager Instance { get; private set; }
-
-    [System.Serializable]
-    public struct Popup
+    public class PopupEventArgs : EventArgs
     {
-        public PopupType type;
-        public GameObject popupObject;
-    }
+        public PopupType PopupType { get; }
 
-    public List<Popup> popups;
-    private Dictionary<PopupType, GameObject> popupDictionary;
-
-    public event EventHandler<PopupEventArgs> PopupShown;
-    public event EventHandler<PopupEventArgs> PopupHidden;
-
-    void Awake()
-    {
-        if (Instance == null)
+        public PopupEventArgs(PopupType popupType)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            InitializePopups();
-        }
-        else
-        {
-            Destroy(gameObject);
+            PopupType = popupType;
         }
     }
 
-    void InitializePopups()
+    public class PopupManager : MonoBehaviour
     {
-        popupDictionary = new Dictionary<PopupType, GameObject>();
-        foreach (var popup in popups)
-        {
-            popupDictionary.Add(popup.type, popup.popupObject);
-            popup.popupObject.SetActive(false);
-        }
-    }
+        #region Singleton
 
-    public void ShowPopup(PopupType type)
-    {
-        if (!popupDictionary.ContainsKey(type))
-        {
-            Debug.LogError($"Popup with type {type} not found!");
-            return;
-        }
+        public static PopupManager Instance { get; private set; }
 
-        GameObject popupObject = popupDictionary[type];
-        if (popupObject == null)
+        #endregion
+
+        #region Struct: Popup
+
+        [Serializable]
+        public struct Popup
         {
-            Debug.LogError($"Popup object for type {type} is null!");
-            return;
+            public PopupType type;
+            public GameObject popupObject;
         }
 
-        Debug.Log($"Showing popup of type {type}");
-        popupObject.SetActive(true);
-        Debug.Log($"Popup {type} is now active: {popupObject.activeSelf}");
-        Debug.Log($"Popup {type} is in hierarchy: {popupObject.transform.parent != null}");
-        PopupShown?.Invoke(this, new PopupEventArgs(type));
-    }
+        #endregion
 
-    public void HidePopup(PopupType type)
-    {
-        if (!popupDictionary.ContainsKey(type))
+        #region Contents
+
+        public List<Popup> popups;
+        private Dictionary<PopupType, GameObject> popupDictionary;
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler<PopupEventArgs> PopupShown;
+        public event EventHandler<PopupEventArgs> PopupHidden;
+
+        #endregion
+
+        #region Unity: Awake
+
+        public void Awake()
         {
-            Debug.LogError($"Popup with type {type} not found!");
-            return;
+            if (Instance == null)
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+                InitPopups();
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
 
-        popupDictionary[type].SetActive(false);
-        PopupHidden?.Invoke(this, new PopupEventArgs(type));
-    }
+        #endregion
 
-    public void HideAllPopups()
-    {
-        foreach (var popup in popupDictionary.Values)
+        
+        #region Init: Popups
+
+        void InitPopups()
         {
-            popup.SetActive(false);
+            popupDictionary = new Dictionary<PopupType, GameObject>();
+            foreach (var popup in popups)
+            {
+                popupDictionary.Add(popup.type, popup.popupObject);
+                popup.popupObject.SetActive(false);
+            }
         }
-    }
-}
 
-public class PopupEventArgs : EventArgs
-{
-    public PopupType PopupType { get; }
+        #endregion
 
-    public PopupEventArgs(PopupType popupType)
-    {
-        PopupType = popupType;
+        #region Show: Popup
+
+        public void ShowPopup(PopupType type)
+        {
+            if (!popupDictionary.ContainsKey(type))
+            {
+                Debug.LogError($"Popup with type {type} not found!");
+                return;
+            }
+
+            GameObject popupObject = popupDictionary[type];
+            if (popupObject == null)
+            {
+                Debug.LogError($"Popup object for type {type} is null!");
+                return;
+            }
+
+            Debug.Log($"Showing popup of type {type}");
+            popupObject.SetActive(true);
+            Debug.Log($"Popup {type} is now active: {popupObject.activeSelf}");
+            Debug.Log($"Popup {type} is in hierarchy: {popupObject.transform.parent != null}");
+            PopupShown?.Invoke(this, new PopupEventArgs(type));
+        }
+
+        #endregion
+
+        #region Hide: Popup
+
+        public void HidePopup(PopupType type)
+        {
+            if (!popupDictionary.ContainsKey(type))
+            {
+                Debug.LogError($"Popup with type {type} not found!");
+                return;
+            }
+
+            popupDictionary[type].SetActive(false);
+            PopupHidden?.Invoke(this, new PopupEventArgs(type));
+        }
+
+        #endregion
+
+        #region Hide: All: Popups
+
+        public void HideAllPopups()
+        {
+            foreach (var popup in popupDictionary.Values)
+            {
+                popup.SetActive(false);
+            }
+        }
+
+        #endregion
     }
 }

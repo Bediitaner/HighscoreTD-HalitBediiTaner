@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Enemy Config", menuName = "ScriptableObjects/New Enemy", order = 51)]
+[CreateAssetMenu(fileName = "Enemy Config", menuName = "ScriptableObjects/New Enemy", order = 51)]
 public class EnemyConfigSO : ScriptableObject
 {
     public float currentHealth;

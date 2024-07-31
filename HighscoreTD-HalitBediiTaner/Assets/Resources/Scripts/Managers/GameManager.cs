@@ -8,44 +8,79 @@ namespace Resources.Scripts.Managers
 {
     public class GameManager : MonoBehaviour
     {
-        public static GameManager Instance { get; private set; }
-        public StateMachine StateMachine { get; private set; }
-        private DatabaseReference databaseReference;
-        private string _userId;
+        #region Singleton
 
+        public static GameManager Instance { get; private set; }
+
+        #endregion
+
+        #region StateMachine
+
+        public StateMachine StateMachine { get; private set; }
+
+        #endregion
+
+        #region Contents
+
+        [SerializeField] private Transform[] _waypoints;
+        [SerializeField] private GameObject[] _enemyPrefabs;
+        [SerializeField] private TowerConfigSO[] _towerConfigArray;
+
+        [Space] [SerializeField] private Transform _enemySpawnPoint;
+        [SerializeField] private Transform _castleTransform;
+        public Transform CastleTransform => _castleTransform;
+
+        [Space] [SerializeField] private TowerPurchaseHUD _towerPurchaseHUD;
+        [SerializeField] private TopBarHUD _topBarHUD;
+
+        // public Booster booster;
+
+        #endregion
+
+        #region Fields
 
         private Dictionary<TowerType, int> towerPrices;
         private Dictionary<TowerType, TowerConfigSO> towerConfigs;
         private Dictionary<TowerType, GameObject> towerPrefabs;
-        private bool hasPlacedTower;
-        private bool isDataLoaded;
-        private bool isBuyingTower;
+
         private List<Tower> towers = new List<Tower>();
-        private List<Enemy> enemies = new List<Enemy>();
-        public int gold;
-        public int score;
-        public float enemySpawnInterval;
-        public int currentEnemyDifficulty;
-        private int _castleHp = 100;
-        public Transform enemySpawnPoint;
-        public Transform[] waypoints;
-        public GameObject[] enemyPrefabs;
-        public Booster booster;
+        private List<Enemy.Enemy> enemies = new List<Enemy.Enemy>();
 
-        [SerializeField] private Transform castleTransform;
-        public Transform CastleTransform => castleTransform;
+        private bool _hasPlacedTower;
+        private bool _isDataLoaded;
+        private bool _isBuyingTower;
 
-        [SerializeField] public TowerPurchaseHUD towerPurchaseHUD;
+        [Space] [Header("Debug")] public int Gold;
+        public int Score;
+        public float EnemySpawnInterval;
+        public int CurrentEnemyDifficulty;
+        public int CastleHp = 100;
 
-        [SerializeField] private TopBarHUD _topBarHUD;
+        //Firebase
+        private DatabaseReference databaseReference;
+        private string _userId;
 
-        [SerializeField] private TowerConfigSO[] towerConfigArray;
+        #endregion
+
+        #region Properties
+
+        public bool HasPlacedTower => _hasPlacedTower;
+        public bool IsDataLoaded => _isDataLoaded;
+
+        public bool IsBuyingTower
+        {
+            get => _isBuyingTower;
+            set => _isBuyingTower = value;
+        }
+
+        #endregion
+
+
+        #region Unity: Awake | Start | Update | OnApplicationQuit
 
         private void Awake()
         {
-            InitializeSingleton();
-            InitializeStateMachine();
-            InitializeGameSettings();
+            Init();
         }
 
         private void Start()
@@ -60,7 +95,6 @@ namespace Resources.Scripts.Managers
         private void Update()
         {
             StateMachine.Update();
-            Debug.Log(StateMachine.GetCurrentState());
         }
 
         private void OnApplicationQuit()
@@ -68,7 +102,21 @@ namespace Resources.Scripts.Managers
             SaveCurrentData();
         }
 
-        #region Initialization
+        #endregion
+
+
+        #region Init
+
+        private void Init()
+        {
+            InitializeSingleton();
+            InitializeStateMachine();
+            InitializeTowerPrices();
+            InitializeTowerConfigs();
+            InitializeTowerPrefabs();
+        }
+
+        #region Init: Singleton
 
         private void InitializeSingleton()
         {
@@ -82,17 +130,18 @@ namespace Resources.Scripts.Managers
             DontDestroyOnLoad(gameObject);
         }
 
+        #endregion
+
+        #region Init: StateMachine
+
         private void InitializeStateMachine()
         {
             StateMachine = new StateMachine();
         }
 
-        private void InitializeGameSettings()
-        {
-            InitializeTowerPrices();
-            InitializeTowerConfigs();
-            InitializeTowerPrefabs();
-        }
+        #endregion
+
+        #region Init: Prices | Configs | Prefabs
 
         private void InitializeTowerPrices()
         {
@@ -107,7 +156,7 @@ namespace Resources.Scripts.Managers
         private void InitializeTowerConfigs()
         {
             towerConfigs = new Dictionary<TowerType, TowerConfigSO>();
-            foreach (var config in towerConfigArray)
+            foreach (var config in _towerConfigArray)
             {
                 towerConfigs[config.towerType] = config;
             }
@@ -134,12 +183,17 @@ namespace Resources.Scripts.Managers
 
         #endregion
 
-        #region Castle Management
+        #endregion
+
+
+        #region Management: Castle
+
+        #region Damage: Castle
 
         public void DamageCastle(int damage)
         {
-            _castleHp -= damage;
-            if (_castleHp <= 0)
+            CastleHp -= damage;
+            if (CastleHp <= 0)
             {
                 EndGame();
             }
@@ -147,28 +201,29 @@ namespace Resources.Scripts.Managers
 
         #endregion
 
-        #region Tower Management
+        #endregion
+
+        #region Management: Tower
+
+        #region Get: TowerPrice
 
         public int GetTowerPrice(TowerType towerType)
         {
             return towerPrices[towerType];
         }
 
-        public void PlaceTower(TowerType towerType, Vector3 position)
+        #endregion
+
+        #region Get: TowerConfig: SO
+
+        private TowerConfigSO GetTowerConfig(TowerType towerType)
         {
-            Tower tower = InstantiateTower(towerType);
-            tower.Place(position);
-            towers.Add(tower);
-
-            // Increase the price for the next tower of the same type
-            towerPrices[towerType] += 10;
-
-            // Set hasPlacedTower to true
-            hasPlacedTower = true;
-
-            // Update the gold text in the UI
-            UpdateGoldText();
+            return towerConfigs[towerType];
         }
+
+        #endregion
+
+        #region Tower: Instantiate
 
         private Tower InstantiateTower(TowerType towerType)
         {
@@ -204,67 +259,82 @@ namespace Resources.Scripts.Managers
             return tower;
         }
 
-        private TowerConfigSO GetTowerConfig(TowerType towerType)
-        {
-            return towerConfigs[towerType];
-        }
+        #endregion
 
-        public bool HasPlacedTower => hasPlacedTower;
-        public bool IsDataLoaded => isDataLoaded;
+        #region Tower: Place
 
-        public bool IsBuyingTower
+        public void PlaceTower(TowerType towerType, Vector3 position)
         {
-            get => isBuyingTower;
-            set => isBuyingTower = value;
+            Tower tower = InstantiateTower(towerType);
+            tower.Place(position);
+            towers.Add(tower);
+
+            towerPrices[towerType] += 10;
+            _hasPlacedTower = true;
+            UpdateTowerPurchaseGoldText();
         }
 
         #endregion
 
-        #region Enemy Management
+        #endregion
 
-        public void OnEnemyKilled(Enemy enemy)
-        {
-            enemies.Remove(enemy);
-            score += 10;
-            gold += 5;
-            UpdateTopBarHUD();
-            booster.AddBoosterAmount(10);
-            UpdateGoldText();
-        }
+        #region Management: Enemy
 
-        private void UpdateTopBarHUD()
-        {
-            _topBarHUD.SetGold(gold);
-            _topBarHUD.SetScore(score);
-        }
+        #region Start: SpawningEnemies
 
         public void StartSpawningEnemies()
         {
             StartCoroutine(SpawnEnemies());
         }
 
+        #endregion
+
+        #region Spawn: Enemies
+
         private IEnumerator SpawnEnemies()
         {
             while (true)
             {
-                yield return new WaitForSeconds(enemySpawnInterval);
-                Enemy enemy = InstantiateEnemy();
+                yield return new WaitForSeconds(EnemySpawnInterval);
+                Enemy.Enemy enemy = InstantiateEnemy();
                 enemies.Add(enemy);
-                enemySpawnInterval = Mathf.Max(1.0f, enemySpawnInterval - 0.1f);
-                currentEnemyDifficulty++;
+                EnemySpawnInterval = Mathf.Max(1.0f, EnemySpawnInterval - 0.1f);
+                CurrentEnemyDifficulty++;
             }
         }
 
-        private Enemy InstantiateEnemy()
+        #endregion
+
+        #region Instantiate: Enemy
+
+        private Enemy.Enemy InstantiateEnemy()
         {
-            GameObject enemyObject = Instantiate(enemyPrefabs[Random.Range(0, enemyPrefabs.Length)], enemySpawnPoint.position, Quaternion.identity);
-            Enemy enemy = enemyObject.GetComponent<Enemy>();
+            GameObject enemyObject = Instantiate(_enemyPrefabs[Random.Range(0, _enemyPrefabs.Length)], _enemySpawnPoint.position, Quaternion.identity);
+            Enemy.Enemy enemy = enemyObject.GetComponent<Enemy.Enemy>();
             return enemy;
         }
 
         #endregion
 
-        #region Game State Management
+        #region Enemy: OnKilled
+
+        public void OnEnemyKilled(Enemy.Enemy enemy)
+        {
+            enemies.Remove(enemy);
+            Score += 10;
+            Gold += 5;
+            UpdateTopBarHUDs();
+            // booster.AddBoosterAmount(10);
+            UpdateTowerPurchaseGoldText();
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Management: Game State
+
+        #region Clear: CurrentGameState
 
         private void ClearCurrentGameState()
         {
@@ -283,13 +353,76 @@ namespace Resources.Scripts.Managers
             enemies.Clear();
         }
 
+        #endregion
+
+        #region Game: End
+
+        public void EndGame()
+        {
+            Debug.Log("Game Over");
+            StateMachine.ChangeState(new GameEndState(this));
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Management: UI
+
+        public void UpdateTowerPurchaseGoldText()
+        {
+            _towerPurchaseHUD.UpdatePriceTexts();
+        }
+
+        private void UpdateTopBarHUDs()
+        {
+            _topBarHUD.SetGold(Gold);
+            _topBarHUD.SetScore(Score);
+        }
+
+        private void ShowLoadGamePopup()
+        {
+            PopupManager.Instance.ShowPopup(PopupType.LoadSessionPopup);
+        }
+
+        #endregion
+
+        #region Management: Data
+
+        #region Create: DefaultSessionData
+
+        private void CreateDefaultSessionData(string userId)
+        {
+            SessionData defaultData = new SessionData()
+            {
+                towers = new List<TowerData>(),
+                currentGoldAmount = 250,
+                currentEnemyDifficulty = 1,
+                currentScoreAmount = 0,
+                currentSpawnInterval = 5.0f,
+                currentCastleHP = 100
+            };
+            string json = JsonUtility.ToJson(defaultData);
+            databaseReference.Child("users").Child(userId).SetRawJsonValueAsync(json);
+
+            Gold = defaultData.currentGoldAmount;
+            CurrentEnemyDifficulty = defaultData.currentEnemyDifficulty;
+            Score = defaultData.currentScoreAmount;
+            EnemySpawnInterval = defaultData.currentSpawnInterval;
+            CastleHp = defaultData.currentCastleHP;
+        }
+
+        #endregion
+
+        #region Load: GameData
+
         private void LoadGameData(SessionData data)
         {
-            gold = data.currentGoldAmount;
-            score = data.currentScoreAmount;
-            enemySpawnInterval = data.currentSpawnInterval;
-            currentEnemyDifficulty = data.currentEnemyDifficulty;
-            _castleHp = data.currentCastleHP;
+            Gold = data.currentGoldAmount;
+            Score = data.currentScoreAmount;
+            EnemySpawnInterval = data.currentSpawnInterval;
+            CurrentEnemyDifficulty = data.currentEnemyDifficulty;
+            CastleHp = data.currentCastleHP;
 
 
             foreach (var towerData in data.towers)
@@ -301,56 +434,9 @@ namespace Resources.Scripts.Managers
             }
         }
 
-        public void EndGame()
-        {
-            Debug.Log("Game Over");
-            StateMachine.ChangeState(new GameEndState(this));
-        }
-
         #endregion
 
-        #region UI Management
-
-        public void UpdateGoldText()
-        {
-            towerPurchaseHUD.UpdatePriceTexts();
-        }
-
-        #endregion
-
-        #region Data Management
-
-        private SessionData CreateDefaultSessionData()
-        {
-            return new SessionData
-            {
-                towers = new List<TowerData>(),
-                currentGoldAmount = 250,
-                currentEnemyDifficulty = 1,
-                currentScoreAmount = 0,
-                currentSpawnInterval = 5.0f,
-                currentCastleHP = 100
-            };
-        }
-
-
-        private void CreateAndSaveDefaultData(string userId)
-        {
-            SessionData defaultData = CreateDefaultSessionData();
-            string json = JsonUtility.ToJson(defaultData);
-            databaseReference.Child("users").Child(userId).SetRawJsonValueAsync(json);
-
-            gold = defaultData.currentGoldAmount;
-            currentEnemyDifficulty = defaultData.currentEnemyDifficulty;
-            score = defaultData.currentScoreAmount;
-            enemySpawnInterval = defaultData.currentSpawnInterval;
-            _castleHp = defaultData.currentCastleHP;
-        }
-
-        private void ShowLoadGamePopup()
-        {
-            PopupManager.Instance.ShowPopup(PopupType.LoadSessionPopup);
-        }
+        #region Load: ExistingData
 
         public void LoadExistingData()
         {
@@ -372,12 +458,20 @@ namespace Resources.Scripts.Managers
             });
         }
 
+        #endregion
+
+        #region Load: NewDefaultData
+
         public void LoadNewData()
         {
-            CreateAndSaveDefaultData(_userId);
+            CreateDefaultSessionData(_userId);
         }
 
-        public void SaveCurrentData()
+        #endregion
+
+        #region Save: CurrentData
+
+        private void SaveCurrentData()
         {
             string userId = _userId;
             SessionData currentData = GetCurrentSessionData();
@@ -385,16 +479,20 @@ namespace Resources.Scripts.Managers
             databaseReference.Child("users").Child(userId).SetRawJsonValueAsync(json);
         }
 
+        #endregion
+
+        #region Get: Current: SessionData
+
         private SessionData GetCurrentSessionData()
         {
             SessionData currentData = new SessionData
             {
                 towers = new List<TowerData>(),
-                currentGoldAmount = gold,
-                currentEnemyDifficulty = currentEnemyDifficulty,
-                currentScoreAmount = score,
-                currentSpawnInterval = enemySpawnInterval,
-                currentCastleHP = _castleHp
+                currentGoldAmount = Gold,
+                currentEnemyDifficulty = CurrentEnemyDifficulty,
+                currentScoreAmount = Score,
+                currentSpawnInterval = EnemySpawnInterval,
+                currentCastleHP = CastleHp
             };
 
             foreach (var tower in towers)
@@ -410,6 +508,8 @@ namespace Resources.Scripts.Managers
 
             return currentData;
         }
+
+        #endregion
 
         #endregion
     }

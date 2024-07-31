@@ -8,13 +8,11 @@ public class PlayingState : State
     public override void Enter()
     {
         base.Enter();
-        // Normal game speed
         Time.timeScale = 1f;
     }
 
     public override void Update()
     {
         base.Update();
-        // Game logic for playing state
     }
 }

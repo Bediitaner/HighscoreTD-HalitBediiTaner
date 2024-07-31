@@ -24,9 +24,9 @@ public class TowerPurchaseHUD : MonoBehaviour
 
     private void OnTowerButtonClicked(TowerType towerType)
     {
-        if (GameManager.Instance.gold >= GameManager.Instance.GetTowerPrice(towerType))
+        if (GameManager.Instance.Gold >= GameManager.Instance.GetTowerPrice(towerType))
         {
-            GameManager.Instance.gold -= GameManager.Instance.GetTowerPrice(towerType);
+            GameManager.Instance.Gold -= GameManager.Instance.GetTowerPrice(towerType);
             TowerPlacementManager.Instance.StartPlacingTower(towerType);
             UpdatePriceTexts();
         }

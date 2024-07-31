@@ -1,3 +1,4 @@
+using Resources.Scripts.Managers;
 using UnityEngine;
 
 public class PlacementArea : MonoBehaviour
