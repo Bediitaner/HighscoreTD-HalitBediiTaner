@@ -1,5 +1,6 @@
 using Resources.Scripts.Managers;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class TowerPlacementManager : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class TowerPlacementManager : MonoBehaviour
     private TowerType selectedTowerType;
     public TowerType SelectedTowerType => selectedTowerType;
     private bool isPlacingTower;
+    private List<Vector3> placedTowerPositions = new List<Vector3>();
 
     private void Awake()
     {
@@ -33,10 +35,29 @@ public class TowerPlacementManager : MonoBehaviour
     {
         if (!isPlacingTower) return;
 
+        if (IsTowerPlacedAtPosition(position))
+        {
+            Debug.Log("A tower is already placed at this position.");
+            return;
+        }
+
         GameManager.Instance.PlaceTower(selectedTowerType, position);
+        placedTowerPositions.Add(position);
         isPlacingTower = false;
         // Hide placement areas
         ShowPlacementAreas(false);
+    }
+
+    private bool IsTowerPlacedAtPosition(Vector3 position)
+    {
+        foreach (var placedPosition in placedTowerPositions)
+        {
+            if (Vector3.Distance(placedPosition, position) < 0.1f) // Adjust the threshold as needed
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void ShowPlacementAreas(bool show)

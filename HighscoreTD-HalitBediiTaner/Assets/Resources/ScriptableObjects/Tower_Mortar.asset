@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d011673594f4fd891e359852e5436cb, type: 3}
   m_Name: Tower_Mortar
   m_EditorClassIdentifier: 
-  towerType: 0
+  towerType: 2
   cost: 30
   maxRange: 20
   deadRange: 0
