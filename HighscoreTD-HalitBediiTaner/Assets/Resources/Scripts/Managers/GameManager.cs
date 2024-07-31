@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Firebase.Database;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Resources.Scripts.Managers
 {
@@ -8,6 +10,9 @@ namespace Resources.Scripts.Managers
     {
         public static GameManager Instance { get; private set; }
         public StateMachine StateMachine { get; private set; }
+        private DatabaseReference databaseReference;
+        private string _userId;
+
 
         private Dictionary<TowerType, int> towerPrices;
         private Dictionary<TowerType, TowerConfigSO> towerConfigs;
@@ -21,23 +26,20 @@ namespace Resources.Scripts.Managers
         public int score;
         public float enemySpawnInterval;
         public int currentEnemyDifficulty;
+        private int _castleHp = 100;
         public Transform enemySpawnPoint;
         public Transform[] waypoints;
         public GameObject[] enemyPrefabs;
         public Booster booster;
 
-        [SerializeField]
-        private Transform castleTransform;
+        [SerializeField] private Transform castleTransform;
         public Transform CastleTransform => castleTransform;
 
-        [SerializeField]
-        public TowerPurchaseHUD towerPurchaseHUD;
+        [SerializeField] public TowerPurchaseHUD towerPurchaseHUD;
 
-        [SerializeField]
-        private TopBarHUD _topBarHUD;
+        [SerializeField] private TopBarHUD _topBarHUD;
 
-        [SerializeField]
-        private TowerConfigSO[] towerConfigArray;
+        [SerializeField] private TowerConfigSO[] towerConfigArray;
 
         private void Awake()
         {
@@ -48,12 +50,22 @@ namespace Resources.Scripts.Managers
 
         private void Start()
         {
+            databaseReference = FirebaseDatabase.DefaultInstance.RootReference;
+            _userId = SystemInfo.deviceUniqueIdentifier;
+
+            LoadExistingData();
             StateMachine.ChangeState(new StartingState(this));
         }
 
         private void Update()
         {
             StateMachine.Update();
+            Debug.Log(StateMachine.GetCurrentState());
+        }
+
+        private void OnApplicationQuit()
+        {
+            SaveCurrentData();
         }
 
         #region Initialization
@@ -117,6 +129,19 @@ namespace Resources.Scripts.Managers
                 {
                     Debug.LogError($"Failed to load prefab for {prefab.Key}");
                 }
+            }
+        }
+
+        #endregion
+
+        #region Castle Management
+
+        public void DamageCastle(int damage)
+        {
+            _castleHp -= damage;
+            if (_castleHp <= 0)
+            {
+                EndGame();
             }
         }
 
@@ -186,6 +211,7 @@ namespace Resources.Scripts.Managers
 
         public bool HasPlacedTower => hasPlacedTower;
         public bool IsDataLoaded => isDataLoaded;
+
         public bool IsBuyingTower
         {
             get => isBuyingTower;
@@ -212,6 +238,11 @@ namespace Resources.Scripts.Managers
             _topBarHUD.SetScore(score);
         }
 
+        public void StartSpawningEnemies()
+        {
+            StartCoroutine(SpawnEnemies());
+        }
+
         private IEnumerator SpawnEnemies()
         {
             while (true)
@@ -234,18 +265,6 @@ namespace Resources.Scripts.Managers
         #endregion
 
         #region Game State Management
-
-        public async void LoadSession()
-        {
-            SessionData data = await DataManager.Instance.LoadData();
-
-            if (data != null)
-            {
-                ClearCurrentGameState();
-                LoadGameData(data);
-                isDataLoaded = true;
-            }
-        }
 
         private void ClearCurrentGameState()
         {
@@ -270,6 +289,8 @@ namespace Resources.Scripts.Managers
             score = data.currentScoreAmount;
             enemySpawnInterval = data.currentSpawnInterval;
             currentEnemyDifficulty = data.currentEnemyDifficulty;
+            _castleHp = data.currentCastleHP;
+
 
             foreach (var towerData in data.towers)
             {
@@ -278,31 +299,6 @@ namespace Resources.Scripts.Managers
                 tower.level = towerData.level;
                 towers.Add(tower);
             }
-        }
-
-        public void SaveSession()
-        {
-            SessionData data = new SessionData
-            {
-                towers = new List<TowerData>(),
-                currentGoldAmount = gold,
-                currentEnemyDifficulty = currentEnemyDifficulty,
-                currentScoreAmount = score,
-                currentSpawnInterval = enemySpawnInterval
-            };
-
-            foreach (var tower in towers)
-            {
-                TowerData towerData = new TowerData
-                {
-                    towerType = tower.config.towerType,
-                    position = tower.Position,
-                    level = tower.level
-                };
-                data.towers.Add(towerData);
-            }
-
-            DataManager.Instance.SaveData(data);
         }
 
         public void EndGame()
@@ -318,6 +314,101 @@ namespace Resources.Scripts.Managers
         public void UpdateGoldText()
         {
             towerPurchaseHUD.UpdatePriceTexts();
+        }
+
+        #endregion
+
+        #region Data Management
+
+        private SessionData CreateDefaultSessionData()
+        {
+            return new SessionData
+            {
+                towers = new List<TowerData>(),
+                currentGoldAmount = 250,
+                currentEnemyDifficulty = 1,
+                currentScoreAmount = 0,
+                currentSpawnInterval = 5.0f,
+                currentCastleHP = 100
+            };
+        }
+
+
+        private void CreateAndSaveDefaultData(string userId)
+        {
+            SessionData defaultData = CreateDefaultSessionData();
+            string json = JsonUtility.ToJson(defaultData);
+            databaseReference.Child("users").Child(userId).SetRawJsonValueAsync(json);
+
+            gold = defaultData.currentGoldAmount;
+            currentEnemyDifficulty = defaultData.currentEnemyDifficulty;
+            score = defaultData.currentScoreAmount;
+            enemySpawnInterval = defaultData.currentSpawnInterval;
+            _castleHp = defaultData.currentCastleHP;
+        }
+
+        private void ShowLoadGamePopup()
+        {
+            PopupManager.Instance.ShowPopup(PopupType.LoadSessionPopup);
+        }
+
+        public void LoadExistingData()
+        {
+            databaseReference.Child("users").Child(_userId).GetValueAsync().ContinueWith(task =>
+            {
+                if (task.IsCompleted)
+                {
+                    DataSnapshot snapshot = task.Result;
+                    if (snapshot.Exists)
+                    {
+                        SessionData data = JsonUtility.FromJson<SessionData>(snapshot.GetRawJsonValue());
+                        LoadGameData(data);
+                    }
+                    else
+                    {
+                        LoadNewData();
+                    }
+                }
+            });
+        }
+
+        public void LoadNewData()
+        {
+            CreateAndSaveDefaultData(_userId);
+        }
+
+        public void SaveCurrentData()
+        {
+            string userId = _userId;
+            SessionData currentData = GetCurrentSessionData();
+            string json = JsonUtility.ToJson(currentData);
+            databaseReference.Child("users").Child(userId).SetRawJsonValueAsync(json);
+        }
+
+        private SessionData GetCurrentSessionData()
+        {
+            SessionData currentData = new SessionData
+            {
+                towers = new List<TowerData>(),
+                currentGoldAmount = gold,
+                currentEnemyDifficulty = currentEnemyDifficulty,
+                currentScoreAmount = score,
+                currentSpawnInterval = enemySpawnInterval,
+                currentCastleHP = _castleHp
+            };
+
+            foreach (var tower in towers)
+            {
+                TowerData towerData = new TowerData
+                {
+                    towerType = tower.config.towerType,
+                    position = tower.transform.position,
+                    level = tower.level
+                };
+                currentData.towers.Add(towerData);
+            }
+
+            return currentData;
         }
 
         #endregion

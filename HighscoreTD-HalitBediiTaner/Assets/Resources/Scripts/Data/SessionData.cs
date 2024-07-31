@@ -8,4 +8,5 @@ public class SessionData
     public int currentEnemyDifficulty;
     public int currentScoreAmount;
     public float currentSpawnInterval;
+    public int currentCastleHP; 
 }

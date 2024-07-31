@@ -52,7 +52,17 @@ public class PopupManager : MonoBehaviour
             return;
         }
 
-        popupDictionary[type].SetActive(true);
+        GameObject popupObject = popupDictionary[type];
+        if (popupObject == null)
+        {
+            Debug.LogError($"Popup object for type {type} is null!");
+            return;
+        }
+
+        Debug.Log($"Showing popup of type {type}");
+        popupObject.SetActive(true);
+        Debug.Log($"Popup {type} is now active: {popupObject.activeSelf}");
+        Debug.Log($"Popup {type} is in hierarchy: {popupObject.transform.parent != null}");
         PopupShown?.Invoke(this, new PopupEventArgs(type));
     }
 

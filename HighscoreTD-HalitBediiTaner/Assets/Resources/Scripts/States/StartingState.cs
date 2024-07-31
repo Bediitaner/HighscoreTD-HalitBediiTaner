@@ -8,8 +8,7 @@ public class StartingState : State
     public override void Enter()
     {
         base.Enter();
-        // Load data from Firebase
-        gameManager.LoadSession();
+        GameManager.Instance.StartSpawningEnemies();
     }
 
     public override void Update()
